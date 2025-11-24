@@ -11,8 +11,9 @@ import (
 
 func main() {
 	userService := service.NewUserService()
-	userController := controller.NewUserController(userService)
 	userRepository := repository.NewUserRepository()
+	userService := service.NewUserService(userRepository)
+
 
 	router := app.NewRouter(userController)
 

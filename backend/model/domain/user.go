@@ -8,5 +8,5 @@ type User struct {
 	Id     uuid.UUID `json:"id"`
 	Email  string    `json:"email"`
 	Name   string    `json:"name"`
-	Password string    `json:"-"`
+	PasswordHash string   `json:"password_hash"`
 }

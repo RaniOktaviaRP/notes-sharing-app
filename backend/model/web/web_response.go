@@ -1,6 +1,7 @@
 package web 
 
 type WebResponse struct {
-	Message string      `json:"message"`
-	Data    interface{} `json:"data,omitempty"`
+	Code int     `json:"code"`
+	Status string  `json:"status"`
+	Data    interface{} `json:"data"`
 }
