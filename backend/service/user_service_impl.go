@@ -1,75 +1,84 @@
 package service
 
 import (
-	"os"
 	"context"
 	"database/sql"
-	"notes-app/backend/helper"
 	"notes-app/backend/model/domain"
 	"notes-app/backend/model/web"
-	"github.com/golang-jwt/jwt/v5"
 	"notes-app/backend/repository"
-	"golang.org/x/crypto/bcrypt"
+	"os"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserServiceImpl struct {
 	UserRepository repository.UserRepository
-	DB 		   *sql.DB	
+	DB             *sql.DB
 }
 
 func NewUserServiceImpl(UserRepository repository.UserRepository, db *sql.DB) *UserServiceImpl {
 	return &UserServiceImpl{
 		UserRepository: UserRepository,
-		DB:			 db,
+		DB:             db,
 	}
 }
 
-func (s *UserServiceImpl) Register (ctx context.Context, request web.UserRegisterRequest) (web.UserResponse, error) {
+func (s *UserServiceImpl) Register(ctx context.Context, request web.UserRegisterRequest) (web.UserResponse, error) {
 	tx, err := s.DB.Begin()
-	helper.PanicIfError(err)
+	if err != nil {
+		return web.UserResponse{}, err
+	}
 	defer tx.Rollback()
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
-	helper.PanicIfError(err)
-	
+	if err != nil {
+		return web.UserResponse{}, err
+	}
+
 	user := domain.User{
-		Email:    request.Email,
-		Name:     request.Name,
+		Email:        request.Email,
+		Name:         request.Name,
 		PasswordHash: string(hashedPassword),
 	}
 
-	createdUser := s.UserRepository.Create(ctx, tx, user)
-	
+	createdUser, err := s.UserRepository.Create(ctx, tx, user)
+	if err != nil {
+		return web.UserResponse{}, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return web.UserResponse{}, err
+	}
+
 	return web.UserResponse{
 		Id:    createdUser.Id.String(),
 		Email: createdUser.Email,
 		Name:  createdUser.Name,
-	},nil
+	}, nil
+}
 
-	}
-
-// generate jwt token
-func (s *UserServiceImpl) Login (ctx context.Context, request web.UserLoginRequest) (string, error) {
+func (s *UserServiceImpl) Login(ctx context.Context, request web.UserLoginRequest) (string, error) {
 	tx, err := s.DB.Begin()
 	if err != nil {
 		return "", err
 	}
+	defer tx.Rollback()
 
 	user, err := s.UserRepository.FindByEmail(ctx, tx, request.Email)
 	if err != nil {
-		tx.Rollback()
 		return "", err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(request.Password))
 	if err != nil {
-		tx.Rollback()
 		return "", err
 	}
 
 	claims := jwt.MapClaims{
-		"user_id": user.Id,
+		"user_id": user.Id.String(),
 		"email":   user.Email,
 		"exp":     time.Now().Add(time.Hour * 72).Unix(),
 	}
@@ -79,10 +88,13 @@ func (s *UserServiceImpl) Login (ctx context.Context, request web.UserLoginReque
 
 	tokenString, err := token.SignedString(jwtSecret)
 	if err != nil {
-		tx.Rollback()
 		return "", err
 	}
 
-	tx.Commit()
+	err = tx.Commit()
+	if err != nil {
+		return "", err
+	}
+
 	return tokenString, nil
 }

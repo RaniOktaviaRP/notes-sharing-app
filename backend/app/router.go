@@ -26,10 +26,37 @@ func WrapHandlerWithJWT(handler httprouter.Handle) httprouter.Handle {
 }
 
 func NewRouter(userController controller.UserController) *httprouter.Router {
-	router := httprouter.New()
+    router := httprouter.New()
 
-	router.POST("/users", userController.Register)
-	router.POST("/login", userController.Login)
+    router.POST("/users", WrapHandlerWithMiddleware(
+        middleware.CORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+            userController.Register(w, r, httprouter.Params{})
+        })),
+    ))
+
+    router.POST("/login", WrapHandlerWithMiddleware(
+        middleware.CORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+            userController.Login(w, r, httprouter.Params{})
+        })),
+    ))
+
+	router.POST("/notes", WrapHandlerWithJWT(
+        middleware.CORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+            noteController.Create(w, r, httprouter.Params{})
+        })),
+    ))
+
+	router.PUT("/notes/:id", WrapHandlerWithJWT(
+        middleware.CORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+            noteController.Update(w, r, httprouter.Params{})
+        })),
+    ))
+
+	router.DELETE("/notes/:id", WrapHandlerWithJWT(
+        middleware.CORS(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+            noteController.Delete(w, r, httprouter.Params{})
+        })),
+    ))
 
 	router.GET("/swagger/*any", WrapHandlerWithMiddleware(
 		middleware.CORS(httpSwagger.Handler(
