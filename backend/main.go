@@ -8,25 +8,38 @@ import (
 	"notes-app/backend/controller"
 	"notes-app/backend/repository"
 	"notes-app/backend/service"
+
 	"github.com/joho/godotenv"
+	"github.com/go-playground/validator/v10"
+
 	_ "notes-app/backend/docs"
 )
 
+// @title Notes API
+// @version 1.0
+// @description API for Note Application
+// @host localhost:8080
+// @BasePath /
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
-	godotenv.Load()
+    _ = godotenv.Load(".env") 
 
 	db := app.NewDB()
 	defer db.Close()
+
+	validate := validator.New()
 
 	userRepository := repository.NewUserRepository()
 	noteRepository := repository.NewNoteRepositoryImpl(db)
 
 	userService := service.NewUserServiceImpl(userRepository, db)
-	noteService := service.NewNoteServiceImpl(noteRepository, db)
+	noteService := service.NewNoteServiceImpl(noteRepository, db, validate)
 
 	userController := controller.NewUserController(userService)
 	noteController := controller.NewNoteController(noteService)
-
 
 	router := app.NewRouter(userController, noteController)
 
