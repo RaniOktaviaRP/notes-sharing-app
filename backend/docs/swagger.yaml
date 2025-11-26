@@ -184,6 +184,29 @@ paths:
       summary: Delete a note
       tags:
       - Notes
+    get:
+      consumes:
+      - application/json
+      description: Id existing note
+      parameters:
+      - description: Id Note
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/web.NoteUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.WebResponse'
+      security:
+      - BearerAuth: []
+      summary: Id a note
+      tags:
+      - Notes
   /notes{id}:
     put:
       consumes:

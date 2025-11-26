@@ -80,7 +80,7 @@ func (nc *NoteController) GetAll(w http.ResponseWriter, r *http.Request, _ httpr
 // @Produce json
 // @Param request body web.NoteUpdateRequest true "Id Note"
 // @Success 200 {object} web.WebResponse
-// @Router /notes{id}
+// @Router /notes/{id} [get]
 // @Security BearerAuth
 func (controller *NoteController) FindById(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
     id := ps.ByName("id")
