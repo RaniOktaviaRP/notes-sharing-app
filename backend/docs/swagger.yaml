@@ -1,24 +1,5 @@
 basePath: /
 definitions:
-  web.NoteCreateRequest:
-    properties:
-      content:
-        type: string
-      title:
-        type: string
-    required:
-    - content
-    - title
-    type: object
-  web.NoteUpdateRequest:
-    properties:
-      content:
-        type: string
-      id:
-        type: string
-      title:
-        type: string
-    type: object
   web.UserLoginRequest:
     properties:
       email:
@@ -123,8 +104,6 @@ paths:
       - Users
   /notes:
     get:
-      consumes:
-      - application/json
       description: Get all notes for authorized user
       produces:
       - application/json
@@ -140,15 +119,23 @@ paths:
       - Notes
     post:
       consumes:
-      - application/json
+      - multipart/form-data
       description: Create a new note for user
       parameters:
-      - description: Create Note
-        in: body
-        name: request
+      - description: Title
+        in: formData
+        name: title
         required: true
-        schema:
-          $ref: '#/definitions/web.NoteCreateRequest'
+        type: string
+      - description: Content
+        in: formData
+        name: content
+        required: true
+        type: string
+      - description: Image file
+        in: formData
+        name: image
+        type: file
       produces:
       - application/json
       responses:
@@ -163,8 +150,6 @@ paths:
       - Notes
   /notes/{id}:
     delete:
-      consumes:
-      - application/json
       description: Delete note by ID
       parameters:
       - description: Note ID
@@ -185,16 +170,13 @@ paths:
       tags:
       - Notes
     get:
-      consumes:
-      - application/json
-      description: Id existing note
+      description: Get a note by its ID
       parameters:
-      - description: Id Note
-        in: body
-        name: request
+      - description: Note ID
+        in: path
+        name: id
         required: true
-        schema:
-          $ref: '#/definitions/web.NoteUpdateRequest'
+        type: string
       produces:
       - application/json
       responses:
@@ -204,21 +186,31 @@ paths:
             $ref: '#/definitions/web.WebResponse'
       security:
       - BearerAuth: []
-      summary: Id a note
+      summary: Get note by ID
       tags:
       - Notes
-  /notes{id}:
     put:
       consumes:
-      - application/json
-      description: Update existing note
+      - multipart/form-data
+      description: Update an existing note
       parameters:
-      - description: Update Note
-        in: body
-        name: request
+      - description: Note ID
+        in: path
+        name: id
         required: true
-        schema:
-          $ref: '#/definitions/web.NoteUpdateRequest'
+        type: string
+      - description: Title
+        in: formData
+        name: title
+        type: string
+      - description: Content
+        in: formData
+        name: content
+        type: string
+      - description: Image file
+        in: formData
+        name: image
+        type: file
       produces:
       - application/json
       responses:

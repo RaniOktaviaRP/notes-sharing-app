@@ -123,9 +123,6 @@ const docTemplate = `{
                     }
                 ],
                 "description": "Get all notes for authorized user",
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -150,7 +147,7 @@ const docTemplate = `{
                 ],
                 "description": "Create a new note for user",
                 "consumes": [
-                    "application/json"
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -161,13 +158,24 @@ const docTemplate = `{
                 "summary": "Create a new note",
                 "parameters": [
                     {
-                        "description": "Create Note",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/web.NoteCreateRequest"
-                        }
+                        "type": "string",
+                        "description": "Title",
+                        "name": "title",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Content",
+                        "name": "content",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Image file",
+                        "name": "image",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -187,9 +195,41 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Id existing note",
-                "consumes": [
+                "description": "Get a note by its ID",
+                "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "Notes"
+                ],
+                "summary": "Get note by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Note ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/web.WebResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing note",
+                "consumes": [
+                    "multipart/form-data"
                 ],
                 "produces": [
                     "application/json"
@@ -197,16 +237,32 @@ const docTemplate = `{
                 "tags": [
                     "Notes"
                 ],
-                "summary": "Id a note",
+                "summary": "Update a note",
                 "parameters": [
                     {
-                        "description": "Id Note",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/web.NoteUpdateRequest"
-                        }
+                        "type": "string",
+                        "description": "Note ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Title",
+                        "name": "title",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Content",
+                        "name": "content",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "Image file",
+                        "name": "image",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
@@ -225,9 +281,6 @@ const docTemplate = `{
                     }
                 ],
                 "description": "Delete note by ID",
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -242,45 +295,6 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/web.WebResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/notes{id}": {
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Update existing note",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Notes"
-                ],
-                "summary": "Update a note",
-                "parameters": [
-                    {
-                        "description": "Update Note",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/web.NoteUpdateRequest"
-                        }
                     }
                 ],
                 "responses": {
@@ -377,35 +391,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "web.NoteCreateRequest": {
-            "type": "object",
-            "required": [
-                "content",
-                "title"
-            ],
-            "properties": {
-                "content": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                }
-            }
-        },
-        "web.NoteUpdateRequest": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                }
-            }
-        },
         "web.UserLoginRequest": {
             "type": "object",
             "required": [
